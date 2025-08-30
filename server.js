@@ -27,7 +27,7 @@ const seoRoutes = require('./routes/seo');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Security middleware
+// Security middleware (Helmet with CSP updated)
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -35,7 +35,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://myfrontend-chi.vercel.app"], // ✅ Allow frontend
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
@@ -59,37 +59,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS configuration
+// ✅ CORS configuration (frontend + localhost)
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests, or file:// origins)
-    if (!origin) return callback(null, true);
-    
-    if (process.env.NODE_ENV === 'production') {
-      // Production: Allow specific Vercel URLs and localhost
-      const allowedOrigins = [
-        'https://dnv1b-9mhl6pjve-foxdiserts-projects.vercel.app',
-        'https://dnv1b-neucyckqe-foxdiserts-projects.vercel.app',
-        'https://dnv1b-fsnhwkown-foxdiserts-projects.vercel.app',
-        'https://dnv1f-pf75ngvz1-foxdiserts-projects.vercel.app',
-        'https://dnv1f-631kqrwzx-foxdiserts-projects.vercel.app',
-        'https://dnv1f-1jinktkwr-foxdiserts-projects.vercel.app',
-        'https://dnv1f-b0jc74usj-foxdiserts-projects.vercel.app',
-        'http://localhost:3000',
-        'http://localhost:3001'
-      ];
-      
-      // Also allow any Vercel frontend URL pattern
-      if (origin.includes('foxdiserts-projects.vercel.app') || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-    } else {
-      // Development: Allow localhost (any port) and file:// origins for testing
-      if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.startsWith('file://')) {
-        return callback(null, true);
-      }
+    if (!origin) return callback(null, true); // mobile apps, curl, etc.
+
+    const allowedOrigins = [
+      'https://myfrontend-chi.vercel.app', // your frontend
+      'http://localhost:3000', // local dev
+      'http://localhost:3001'
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
-    
+
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
@@ -101,7 +85,7 @@ app.use(cors({
 // Handle preflight requests
 app.options('*', cors());
 
-// Rate limiting - more lenient in development
+// Rate limiting
 if (process.env.NODE_ENV === 'production') {
   app.use(globalLimiter);
   secureConsole.log('🔒 Production mode: Rate limiting enabled');
@@ -117,7 +101,7 @@ app.use(requestSizeLimit);
 app.use(sqlInjectionProtection);
 app.use(xssProtection);
 
-// Body parsing middleware
+// Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -125,7 +109,7 @@ app.use(cookieParser());
 // Static files
 app.use('/uploads', express.static('uploads'));
 
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -134,10 +118,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Rate limit reset endpoint (development only)
+// Rate limit reset (dev only)
 if (process.env.NODE_ENV !== 'production') {
   app.get('/reset-rate-limit', (req, res) => {
-    // This will help reset rate limiting during development
     res.json({ 
       message: 'Rate limit reset endpoint available',
       note: 'Rate limiting is currently disabled in development mode'
@@ -152,27 +135,23 @@ app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/seo', seoRoutes);
 
-// Public SEO routes (no /api prefix)
+// Public SEO routes
 app.use('/robots.txt', seoRoutes);
 app.use('/sitemap.xml', seoRoutes);
 
 // 404 handler
 app.use(notFound);
 
-// Error handling middleware with sanitization
+// Error handling middleware
 app.use(sanitizeErrorResponse);
 app.use(errorHandler);
 
 // Initialize database and start server
 const startServer = async () => {
   try {
-    // Test database connection
     await testConnection();
-    
-    // Initialize database tables
     await initDatabase();
-    
-    // Start server
+
     app.listen(PORT, () => {
       secureConsole.log(`🚀 Server running on port ${PORT}`);
       secureConsole.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -192,7 +171,6 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   secureConsole.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
