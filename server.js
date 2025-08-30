@@ -23,7 +23,7 @@ app.use(helmet());
 // CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps, curl requests, or file:// origins)
     if (!origin) return callback(null, true);
     
     if (process.env.NODE_ENV === 'production') {
@@ -45,8 +45,8 @@ app.use(cors({
         return callback(null, true);
       }
     } else {
-      // Development: Allow localhost (any port)
-      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      // Development: Allow localhost (any port) and file:// origins for testing
+      if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.startsWith('file://')) {
         return callback(null, true);
       }
     }
