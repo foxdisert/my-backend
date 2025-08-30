@@ -13,6 +13,7 @@ const authRoutes = require('./routes/auth');
 const domainRoutes = require('./routes/domains');
 const userRoutes = require('./routes/user');
 const adminRoutes = require('./routes/admin');
+const seoRoutes = require('./routes/seo');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -103,6 +104,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/domains', domainRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/seo', seoRoutes);
+
+// Public SEO routes (no /api prefix)
+app.use('/robots.txt', seoRoutes);
+app.use('/sitemap.xml', seoRoutes);
 
 // 404 handler
 app.use(notFound);
