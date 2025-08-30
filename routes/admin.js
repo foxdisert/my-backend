@@ -658,4 +658,135 @@ router.get('/users/:id/activity', authenticateToken, requireAdmin, async (req, r
   }
 });
 
+// Website Configuration Routes
+router.get('/website-config', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('📋 Fetching website configuration...');
+    
+    const { data, error } = await supabase
+      .from('website_config')
+      .select('*')
+      .order('id', { ascending: true })
+      .limit(1);
+    
+    if (error) {
+      console.error('❌ Database error:', error);
+      return res.status(500).json({ error: 'Failed to fetch website configuration' });
+    }
+    
+    if (data && data.length > 0) {
+      const config = data[0];
+      console.log('✅ Website configuration fetched:', config);
+      res.json(config);
+    } else {
+      // Return default configuration if none exists
+      const defaultConfig = {
+        site_title: 'Domain Toolkit',
+        site_description: 'Professional domain management and analysis tools',
+        logo: '',
+        favicon: '',
+        contact_email: 'admin@domaintoolkit.com',
+        contact_phone: '+1 (555) 123-4567',
+        social_links: {},
+        language: 'en',
+        timezone: 'UTC',
+        currency: 'USD',
+        maintenance_mode: false
+      };
+      console.log('📋 Returning default configuration');
+      res.json(defaultConfig);
+    }
+    
+  } catch (error) {
+    console.error('❌ Website config fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/website-config', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('💾 Saving website configuration...');
+    const configData = req.body;
+    
+    // Validate required fields
+    if (!configData.site_title || !configData.contact_email) {
+      return res.status(400).json({ error: 'Site title and contact email are required' });
+    }
+    
+    // Check if configuration already exists
+    const { data: existingConfig } = await supabase
+      .from('website_config')
+      .select('id')
+      .order('id', { ascending: true })
+      .limit(1);
+    
+    let result;
+    
+    if (existingConfig && existingConfig.length > 0) {
+      // Update existing configuration
+      const { data, error } = await supabase
+        .from('website_config')
+        .update({
+          site_title: configData.site_title,
+          site_description: configData.site_description,
+          logo: configData.logo || '',
+          favicon: configData.favicon || '',
+          contact_email: configData.contact_email,
+          contact_phone: configData.contact_phone || '',
+          social_links: configData.social_links || {},
+          language: configData.language || 'en',
+          timezone: configData.timezone || 'UTC',
+          currency: configData.currency || 'USD',
+          maintenance_mode: configData.maintenance_mode || false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingConfig[0].id)
+        .select();
+      
+      if (error) {
+        console.error('❌ Update error:', error);
+        return res.status(500).json({ error: 'Failed to update website configuration' });
+      }
+      
+      result = data[0];
+      console.log('✅ Website configuration updated:', result);
+    } else {
+      // Insert new configuration
+      const { data, error } = await supabase
+        .from('website_config')
+        .insert({
+          site_title: configData.site_title,
+          site_description: configData.site_description,
+          logo: configData.logo || '',
+          favicon: configData.favicon || '',
+          contact_email: configData.contact_email,
+          contact_phone: configData.contact_phone || '',
+          social_links: configData.social_links || {},
+          language: configData.language || 'en',
+          timezone: configData.timezone || 'UTC',
+          currency: configData.currency || 'USD',
+          maintenance_mode: configData.maintenance_mode || false
+        })
+        .select();
+      
+      if (error) {
+        console.error('❌ Insert error:', error);
+        return res.status(500).json({ error: 'Failed to create website configuration' });
+      }
+      
+      result = data[0];
+      console.log('✅ Website configuration created:', result);
+    }
+    
+    res.json({ 
+      message: 'Website configuration saved successfully',
+      config: result 
+    });
+    
+  } catch (error) {
+    console.error('❌ Website config save error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
