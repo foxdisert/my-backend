@@ -789,4 +789,132 @@ router.post('/website-config', authenticateToken, requireAdmin, async (req, res)
   }
 });
 
+// SEO Settings Routes
+router.get('/seo-settings', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('📋 Fetching SEO settings...');
+    
+    const { data, error } = await supabase
+      .from('seo_settings')
+      .select('*')
+      .order('id', { ascending: true })
+      .limit(1);
+    
+    if (error) {
+      console.error('❌ Database error:', error);
+      return res.status(500).json({ error: 'Failed to fetch SEO settings' });
+    }
+    
+    if (data && data.length > 0) {
+      const settings = data[0];
+      console.log('✅ SEO settings fetched:', settings);
+      res.json(settings);
+    } else {
+      // Return default settings if none exists
+      const defaultSettings = {
+        meta_title: 'Domain Toolkit - Professional Domain Management Tools',
+        meta_description: 'Professional domain management, analysis, and estimation tools for businesses and developers.',
+        meta_keywords: 'domain management, domain analysis, domain estimation, domain tools, web development',
+        google_analytics: '',
+        google_search_console: '',
+        robots_txt: 'User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api\nSitemap: /sitemap.xml',
+        sitemap_enabled: true,
+        canonical_urls: true,
+        structured_data: true,
+        social_media_tags: true
+      };
+      console.log('📋 Returning default SEO settings');
+      res.json(defaultSettings);
+    }
+    
+  } catch (error) {
+    console.error('❌ SEO settings fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/seo-settings', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('💾 Saving SEO settings...');
+    const settingsData = req.body;
+    
+    // Validate required fields
+    if (!settingsData.meta_title || !settingsData.meta_description) {
+      return res.status(400).json({ error: 'Meta title and meta description are required' });
+    }
+    
+    // Check if settings already exist
+    const { data: existingSettings } = await supabase
+      .from('seo_settings')
+      .select('id')
+      .order('id', { ascending: true })
+      .limit(1);
+    
+    let result;
+    
+    if (existingSettings && existingSettings.length > 0) {
+      // Update existing settings
+      const { data, error } = await supabase
+        .from('seo_settings')
+        .update({
+          meta_title: settingsData.meta_title,
+          meta_description: settingsData.meta_description,
+          meta_keywords: settingsData.meta_keywords || '',
+          google_analytics: settingsData.google_analytics || '',
+          google_search_console: settingsData.google_search_console || '',
+          robots_txt: settingsData.robots_txt || 'User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api\nSitemap: /sitemap.xml',
+          sitemap_enabled: settingsData.sitemap_enabled || true,
+          canonical_urls: settingsData.canonical_urls || true,
+          structured_data: settingsData.structured_data || true,
+          social_media_tags: settingsData.social_media_tags || true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingSettings[0].id)
+        .select();
+      
+      if (error) {
+        console.error('❌ Update error:', error);
+        return res.status(500).json({ error: 'Failed to update SEO settings' });
+      }
+      
+      result = data[0];
+      console.log('✅ SEO settings updated:', result);
+    } else {
+      // Insert new settings
+      const { data, error } = await supabase
+        .from('seo_settings')
+        .insert({
+          meta_title: settingsData.meta_title,
+          meta_description: settingsData.meta_description,
+          meta_keywords: settingsData.meta_keywords || '',
+          google_analytics: settingsData.google_analytics || '',
+          google_search_console: settingsData.google_search_console || '',
+          robots_txt: settingsData.robots_txt || 'User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api\nSitemap: /sitemap.xml',
+          sitemap_enabled: settingsData.sitemap_enabled || true,
+          canonical_urls: settingsData.canonical_urls || true,
+          structured_data: settingsData.structured_data || true,
+          social_media_tags: settingsData.social_media_tags || true
+        })
+        .select();
+      
+      if (error) {
+        console.error('❌ Insert error:', error);
+        return res.status(500).json({ error: 'Failed to create SEO settings' });
+      }
+      
+      result = data[0];
+      console.log('✅ SEO settings created:', result);
+    }
+    
+    res.json({ 
+      message: 'SEO settings saved successfully',
+      settings: result 
+    });
+    
+  } catch (error) {
+    console.error('❌ SEO settings save error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
