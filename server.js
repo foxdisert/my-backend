@@ -7,6 +7,15 @@ require('dotenv').config();
 const { testConnection, initDatabase } = require('./config/database');
 const { globalLimiter } = require('./middleware/rateLimit');
 const { errorHandler, notFound } = require('./middleware/error');
+const { secureLogging, secureConsole } = require('./middleware/secureLogging');
+const { 
+  validateAndSanitize, 
+  requestSizeLimit, 
+  sqlInjectionProtection, 
+  xssProtection, 
+  requestLogger, 
+  sanitizeErrorResponse 
+} = require('./middleware/security');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -19,7 +28,36 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+// Additional security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  next();
+});
 
 // CORS configuration
 app.use(cors({
@@ -66,14 +104,22 @@ app.options('*', cors());
 // Rate limiting - more lenient in development
 if (process.env.NODE_ENV === 'production') {
   app.use(globalLimiter);
-  console.log('🔒 Production mode: Rate limiting enabled');
+  secureConsole.log('🔒 Production mode: Rate limiting enabled');
 } else {
-  console.log('🚀 Development mode: Rate limiting disabled for local testing');
+  secureConsole.log('🚀 Development mode: Rate limiting disabled for local testing');
 }
 
+// Security middleware
+app.use(secureLogging);
+app.use(requestLogger);
+app.use(validateAndSanitize);
+app.use(requestSizeLimit);
+app.use(sqlInjectionProtection);
+app.use(xssProtection);
+
 // Body parsing middleware
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
 // Static files
@@ -113,7 +159,8 @@ app.use('/sitemap.xml', seoRoutes);
 // 404 handler
 app.use(notFound);
 
-// Error handling middleware
+// Error handling middleware with sanitization
+app.use(sanitizeErrorResponse);
 app.use(errorHandler);
 
 // Initialize database and start server
@@ -127,38 +174,38 @@ const startServer = async () => {
     
     // Start server
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-      console.log(`📝 API docs: http://localhost:${PORT}/api`);
+      secureConsole.log(`🚀 Server running on port ${PORT}`);
+      secureConsole.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      secureConsole.log(`🔗 Health check: http://localhost:${PORT}/health`);
+      secureConsole.log(`📝 API docs: http://localhost:${PORT}/api`);
     });
     
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    secureConsole.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 };
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  console.error('❌ Uncaught Exception:', error);
+  secureConsole.error('❌ Uncaught Exception:', error);
   process.exit(1);
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  secureConsole.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully');
+  secureConsole.log('🛑 SIGTERM received, shutting down gracefully');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('🛑 SIGINT received, shutting down gracefully');
+  secureConsole.log('🛑 SIGINT received, shutting down gracefully');
   process.exit(0);
 });
 

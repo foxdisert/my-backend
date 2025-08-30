@@ -72,7 +72,13 @@ router.post('/suggestions/upload',
       
       const result = await csvService.processCSV(req.file.path);
       
-      console.log('✅ CSV processing completed:', result);
+      // Log only non-sensitive summary data
+      console.log('✅ CSV processing completed:', {
+        checked: result.checked,
+        inserted: result.inserted,
+        updated: result.updated,
+        errors: result.errors
+      });
 
       // Send final result
       res.write(JSON.stringify({
@@ -749,7 +755,7 @@ router.post('/website-config', authenticateToken, requireAdmin, async (req, res)
       }
       
       result = data[0];
-      console.log('✅ Website configuration updated:', result);
+      console.log('✅ Website configuration updated successfully');
     } else {
       // Insert new configuration
       const { data, error } = await supabase
@@ -775,7 +781,7 @@ router.post('/website-config', authenticateToken, requireAdmin, async (req, res)
       }
       
       result = data[0];
-      console.log('✅ Website configuration created:', result);
+      console.log('✅ Website configuration created successfully');
     }
     
     res.json({ 
@@ -878,7 +884,7 @@ router.post('/seo-settings', authenticateToken, requireAdmin, async (req, res) =
       }
       
       result = data[0];
-      console.log('✅ SEO settings updated:', result);
+      console.log('✅ SEO settings updated successfully');
     } else {
       // Insert new settings
       const { data, error } = await supabase
@@ -903,7 +909,7 @@ router.post('/seo-settings', authenticateToken, requireAdmin, async (req, res) =
       }
       
       result = data[0];
-      console.log('✅ SEO settings created:', result);
+      console.log('✅ SEO settings created successfully');
     }
     
     res.json({ 
