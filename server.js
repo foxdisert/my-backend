@@ -35,7 +35,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://myfrontend-chi.vercel.app"], // ✅ Allow frontend
+      connectSrc: ["'self'", "https://frontdn.netlify.app"], // ✅ Allow frontend
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
@@ -67,7 +67,7 @@ app.use(cors({
     const allowedOrigins = [
       'https://myfrontend-chi.vercel.app', // your frontend
       'http://localhost:3000', // local dev
-      'http://localhost:3001'
+      'https://frontdn.netlify.app'
     ];
 
     if (allowedOrigins.includes(origin)) {
