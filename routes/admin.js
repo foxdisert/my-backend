@@ -691,7 +691,7 @@ router.get('/website-config', authenticateToken, requireAdmin, async (req, res) 
         site_description: 'Professional domain management and analysis tools',
         logo: '',
         favicon: '',
-        contact_email: 'admin@domaintoolkit.com',
+        contact_email: 'admin@mydntk.com',
         contact_phone: '+1 (555) 123-4567',
         social_links: {},
         language: 'en',

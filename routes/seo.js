@@ -25,15 +25,15 @@ router.get('/meta-tags', async (req, res) => {
         ogTitle: 'Domain Toolkit - Professional Domain Management',
         ogDescription: 'Check domain availability, get suggestions, estimate values, and generate creative domain combinations.',
         ogType: 'website',
-        ogUrl: process.env.SITE_URL || 'https://yourdomain.com',
-        ogImage: process.env.SITE_URL ? `${process.env.SITE_URL}/og-image.jpg` : 'https://yourdomain.com/og-image.jpg',
+        ogUrl: process.env.SITE_URL || 'https://mydntk.com',
+        ogImage: process.env.SITE_URL ? `${process.env.SITE_URL}/og-image.jpg` : 'https://mydntk.com/og-image.jpg',
         twitterCard: 'summary_large_image',
         twitterTitle: 'Domain Toolkit - Professional Domain Management',
         twitterDescription: 'Check domain availability, get suggestions, estimate values, and generate creative domain combinations.',
-        twitterImage: process.env.SITE_URL ? `${process.env.SITE_URL}/twitter-image.jpg` : 'https://yourdomain.com/twitter-image.jpg',
+        twitterImage: process.env.SITE_URL ? `${process.env.SITE_URL}/twitter-image.jpg` : 'https://mydntk.com/twitter-image.jpg',
         robots: 'index, follow',
         themeColor: '#3B82F6',
-        canonicalUrl: process.env.SITE_URL || 'https://yourdomain.com'
+        canonicalUrl: process.env.SITE_URL || 'https://mydntk.com'
       });
     }
     
@@ -50,15 +50,15 @@ router.get('/meta-tags', async (req, res) => {
         ogTitle: settings.meta_title || 'Domain Toolkit - Professional Domain Management',
         ogDescription: settings.meta_description || 'Check domain availability, get suggestions, estimate values, and generate creative domain combinations.',
         ogType: 'website',
-        ogUrl: process.env.SITE_URL || 'https://yourdomain.com',
-        ogImage: process.env.SITE_URL ? `${process.env.SITE_URL}/og-image.jpg` : 'https://yourdomain.com/og-image.jpg',
+        ogUrl: process.env.SITE_URL || 'https://mydntk.com',
+        ogImage: process.env.SITE_URL ? `${process.env.SITE_URL}/og-image.jpg` : 'https://mydntk.com/og-image.jpg',
         twitterCard: 'summary_large_image',
         twitterTitle: settings.meta_title || 'Domain Toolkit - Professional Domain Management',
         twitterDescription: settings.meta_description || 'Check domain availability, get suggestions, estimate values, and generate creative domain combinations.',
-        twitterImage: process.env.SITE_URL ? `${process.env.SITE_URL}/twitter-image.jpg` : 'https://yourdomain.com/twitter-image.jpg',
+        twitterImage: process.env.SITE_URL ? `${process.env.SITE_URL}/twitter-image.jpg` : 'https://mydntk.com/twitter-image.jpg',
         robots: settings.robots_txt ? 'index, follow' : 'noindex, nofollow',
         themeColor: '#3B82F6',
-        canonicalUrl: process.env.SITE_URL || 'https://yourdomain.com',
+        canonicalUrl: process.env.SITE_URL || 'https://mydntk.com',
         googleAnalytics: settings.google_analytics || '',
         googleSearchConsole: settings.google_search_console || '',
         sitemapEnabled: settings.sitemap_enabled || true,
@@ -78,15 +78,15 @@ router.get('/meta-tags', async (req, res) => {
         ogTitle: 'Domain Toolkit - Professional Domain Management',
         ogDescription: 'Check domain availability, get suggestions, estimate values, and generate creative domain combinations.',
         ogType: 'website',
-        ogUrl: process.env.SITE_URL || 'https://yourdomain.com',
-        ogImage: process.env.SITE_URL ? `${process.env.SITE_URL}/og-image.jpg` : 'https://yourdomain.com/og-image.jpg',
+        ogUrl: process.env.SITE_URL || 'https://mydntk.com',
+        ogImage: process.env.SITE_URL ? `${process.env.SITE_URL}/og-image.jpg` : 'https://mydntk.com/og-image.jpg',
         twitterCard: 'summary_large_image',
         twitterTitle: 'Domain Toolkit - Professional Domain Management',
         twitterDescription: 'Check domain availability, get suggestions, estimate values, and generate creative domain combinations.',
-        twitterImage: process.env.SITE_URL ? `${process.env.SITE_URL}/twitter-image.jpg` : 'https://yourdomain.com/twitter-image.jpg',
+        twitterImage: process.env.SITE_URL ? `${process.env.SITE_URL}/twitter-image.jpg` : 'https://mydntk.com/twitter-image.jpg',
         robots: 'index, follow',
         themeColor: '#3B82F6',
-        canonicalUrl: process.env.SITE_URL || 'https://yourdomain.com'
+        canonicalUrl: process.env.SITE_URL || 'https://mydntk.com'
       });
     }
     
@@ -114,7 +114,7 @@ router.get('/robots.txt', async (req, res) => {
 Allow: /
 Disallow: /admin
 Disallow: /api
-Sitemap: ${process.env.SITE_URL || 'https://yourdomain.com'}/sitemap.xml`);
+Sitemap: ${process.env.SITE_URL || 'https://mydntk.com'}/sitemap.xml`);
       return;
     }
     
@@ -126,7 +126,7 @@ Disallow: /api`;
 
     // Add sitemap if enabled
     if (settings.sitemap_enabled) {
-      robotsContent += `\nSitemap: ${process.env.SITE_URL || 'https://yourdomain.com'}/sitemap.xml`;
+      robotsContent += `\nSitemap: ${process.env.SITE_URL || 'https://mydntk.com'}/sitemap.xml`;
     }
     
     res.set('Content-Type', 'text/plain');
@@ -154,7 +154,7 @@ router.get('/sitemap.xml', async (req, res) => {
       return;
     }
     
-    const baseUrl = process.env.SITE_URL || 'https://yourdomain.com';
+    const baseUrl = process.env.SITE_URL || 'https://mydntk.com';
     const currentDate = new Date().toISOString();
     
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

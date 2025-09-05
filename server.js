@@ -65,9 +65,9 @@ app.use(cors({
     if (!origin) return callback(null, true); // mobile apps, curl, etc.
 
     const allowedOrigins = [
-      'https://myfrontend-chi.vercel.app', // your frontend
+      'https://mydntk.com', // your frontend
       'http://localhost:3000', // local dev
-      'https://frontdn.netlify.app'
+      'https://wwwmydntk.com'
     ];
 
     if (allowedOrigins.includes(origin)) {
